@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="CarTracker.Common.CarTracker.Common-0.3.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../CarTracker.Common/build/libs/CarTracker.Common-0.3.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

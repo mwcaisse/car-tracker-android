@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="spring-android-auth-2.0.0.M3">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.android/spring-android-auth/2.0.0.M3/46b7f7bae84ae7bdcb9e948fe5803212876a6ab2/spring-android-auth-2.0.0.M3.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.android/spring-android-auth/2.0.0.M3/4a2377e81668290923a01e1d2a3c229ee8b6eaf4/spring-android-auth-2.0.0.M3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

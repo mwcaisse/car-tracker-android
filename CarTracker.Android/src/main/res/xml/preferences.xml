@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="pref_serviceEnabled"
+        android:title="Telemetrics Service Enabled"
+        android:summary="Whether or not the service is enabled"
+        android:defaultValue="true" />
+
+    <CheckBoxPreference
+        android:key="pref_locationEnabled"
+        android:title="Save Location"
+        android:summary="Whether or not keeps track of location information"
+        android:defaultValue="true" />
+
+    <CheckBoxPreference
+        android:key="pref_saveLocallyEnabled"
+        android:title="Save Data Locally"
+        android:summary="Whether or not the data is saved locally"
+        android:defaultValue="true" />
+
+    <EditTextPreference
+        android:key="pref_serverAddress"
+        android:title="Server Address"
+        android:summary="The address of the server containing the api"
+        android:defaultValue="https://home.fourfivefire.com/cartracker/" />
+
+    <PreferenceScreen
+        android:title="Login"
+        android:summary="Login to the server">
+
+        <intent android:action="com.ricex.cartracker.android.view.login.LoginActivity" />
+    </PreferenceScreen>
+
+    <com.ricex.cartracker.android.view.BluetoothDevicePreference
+        android:key="pref_bluetoothDevice"
+        android:title="Bluetooth Device"
+        android:summary="The ODBII bluetooth device"
+        android:defaultValue="" />
+
+    <CheckBoxPreference
+        android:key="pref_adbDeviceAutoPair"
+        android:title="Auto Pair"
+        android:summary="Automatically pair with the OBD Device"
+        android:defaultValue="true" />
+
+    <EditTextPreference
+        androidKey="pref_obdDevicePin"
+        android:title="Bluetooth Device Pin"
+        android:summary="The PIN to use to pair with the OBDII device"
+        android:defaultValue="1234" />
+
+    <com.ricex.cartracker.android.view.BluetoothDevicePreference
+        android:key="pref_triggerBluetoothDevice"
+        android:title="Service Trigger Device"
+        android:summary="The Bluetooth Device to use as a trigger for auto starting the service"
+        android:defaultValue="" />
+
+    <com.ricex.cartracker.android.view.OBDReaderTypePreference
+        android:key="pref_obdReaderType"
+        android:title="OBD Reader Type"
+        android:summary="The OBD Reader to use for gathering OBD data"
+        android:defaultValue="BLUETOOTH_READER" />
+
+    <EditTextPreference
+        android:key="pref_obdReadingInterval"
+        android:title="OBD Reading Interval"
+        android:summary="Number of seconds between each reading. 0 for none"
+        android:defaultValue="15.0"
+        android:inputType="numberDecimal" />
+
+
+</PreferenceScreen>

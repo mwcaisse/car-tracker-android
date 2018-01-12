@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../CarTracker.iml" filepath="$PROJECT_DIR$/../CarTracker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CarTracker.Android.iml" filepath="$PROJECT_DIR$/CarTracker.Android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../CarTracker.AndroidRequester/CarTracker.AndroidRequester.iml" filepath="$PROJECT_DIR$/../CarTracker.AndroidRequester/CarTracker.AndroidRequester.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../CarTracker.Common/CarTracker.Common.iml" filepath="$PROJECT_DIR$/../CarTracker.Common/CarTracker.Common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../CarTracker.Data/CarTracker.Data.iml" filepath="$PROJECT_DIR$/../CarTracker.Data/CarTracker.Data.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../CarTracker.PlacesRequester/CarTracker.PlacesRequester.iml" filepath="$PROJECT_DIR$/../CarTracker.PlacesRequester/CarTracker.PlacesRequester.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../CarTracker.Web/CarTracker.Web.iml" filepath="$PROJECT_DIR$/../CarTracker.Web/CarTracker.Web.iml" />
+    </modules>
+  </component>
+</project>

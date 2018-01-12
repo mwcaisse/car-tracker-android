@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="support-v4-23.1.1">
+    <ANNOTATIONS>
+      <root url="jar://$USER_HOME$/.android/build-cache/4d66d1ae08e54cfe4845a52506b1b18c8406fdca/output/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.android/build-cache/4d66d1ae08e54cfe4845a52506b1b18c8406fdca/output/annotations.zip!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.android/build-cache/ab494fffc58c56d17d1f7f2862c76f62439f433b/output/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.android/build-cache/ab494fffc58c56d17d1f7f2862c76f62439f433b/output/res" />
+      <root url="jar://$USER_HOME$/.android/build-cache/ab494fffc58c56d17d1f7f2862c76f62439f433b/output/jars/libs/internal_impl-23.1.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../../android-sdk/extras/android/m2repository/com/android/support/support-v4/23.1.1/support-v4-23.1.1-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../../android-sdk/extras/android/m2repository/com/android/support/support-v4/23.1.1/support-v4-23.1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
