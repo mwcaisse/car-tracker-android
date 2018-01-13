@@ -16,17 +16,12 @@ public class JsonTripStatusSerializer implements JsonSerializer<TripStatus>, Jso
 	@Override
 	public TripStatus deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
 			throws JsonParseException {
-		
-		TripStatus status = TripStatus.fromString(json.getAsString());
-		if (null == status) {
-			status = TripStatus.valueOf(json.getAsString());
-		}
-		return status;
+		return TripStatus.fromId(json.getAsInt());
 	}
 
 	@Override
 	public JsonElement serialize(TripStatus src, Type typeOfSrc, JsonSerializationContext context) {
-		return new JsonPrimitive(src.toString());
+		return new JsonPrimitive(src.getId());
 	}
 	
 
