@@ -2,7 +2,7 @@ package com.ricex.cartracker.android.service.logger;
 
 import com.ricex.cartracker.androidrequester.request.ApplicationPreferences;
 import com.ricex.cartracker.androidrequester.request.RequestCallback;
-import com.ricex.cartracker.androidrequester.request.RequestResponse;
+import com.ricex.cartracker.androidrequester.request.response.RequestResponse;
 import com.ricex.cartracker.androidrequester.request.exception.RequestException;
 import com.ricex.cartracker.androidrequester.request.tracker.CarTrackerRequestFactory;
 import com.ricex.cartracker.androidrequester.request.tracker.CreateReaderLogRequest;

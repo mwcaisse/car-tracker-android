@@ -1,6 +1,7 @@
 package com.ricex.cartracker.androidrequester.request;
 
 import com.ricex.cartracker.androidrequester.request.exception.RequestException;
+import com.ricex.cartracker.androidrequester.request.response.RequestResponse;
 
 
 public abstract class AbstractRequestCallback<T> implements RequestCallback<T> {

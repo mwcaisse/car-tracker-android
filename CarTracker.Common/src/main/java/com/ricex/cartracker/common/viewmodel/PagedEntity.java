@@ -11,17 +11,17 @@ public class PagedEntity<T> implements Serializable {
 	private static final long serialVersionUID = 3964102662989362006L;
 
 	private final List<T> data;
-	
-	private final int startAt;
-	
-	private final int maxResults;
-	
+
+	private final int skip;
+
+	private final int take;
+
 	private final long total;
-	
-	public PagedEntity(List<T> data, int startAt, int maxResults, long total) {
+
+	public PagedEntity(List<T> data, int skip, int take, long total) {
 		this.data = data;
-		this.startAt = startAt;
-		this.maxResults = maxResults;
+		this.skip = skip;
+		this.take = take;
 		this.total = total;
 	}
 
@@ -33,26 +33,26 @@ public class PagedEntity<T> implements Serializable {
 	}
 
 	/**
-	 * @return the startAt
+	 * @return How many records were skipped (start at)
 	 */
-	public int getStartAt() {
-		return startAt;
+	public int getSkip() {
+		return skip;
 	}
 
 	/**
-	 * @return the maxResults
+	 * @return How many records to take
 	 */
-	public int getMaxResults() {
-		return maxResults;
+	public int getTake() {
+		return take;
 	}
 
 	/**
-	 * @return the total
+	 * @return The total number of records
 	 */
 	public long getTotal() {
 		return total;
 	}
-	
-	
-	
+
+
+
 }

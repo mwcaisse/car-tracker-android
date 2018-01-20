@@ -23,12 +23,14 @@ import com.ricex.cartracker.androidrequester.request.exception.InvalidRequestExc
 import com.ricex.cartracker.androidrequester.request.exception.RequestException;
 import com.ricex.cartracker.androidrequester.request.exception.UnauthenticationRequestException;
 import com.ricex.cartracker.androidrequester.request.exception.UnauthorizedRequestException;
+import com.ricex.cartracker.androidrequester.request.response.ErrorResponse;
+import com.ricex.cartracker.androidrequester.request.response.RequestResponse;
+import com.ricex.cartracker.androidrequester.request.response.SuccessResponse;
 import com.ricex.cartracker.androidrequester.request.user.LoginTokenRequest;
 import com.ricex.cartracker.common.auth.TokenAuthentication;
 import com.ricex.cartracker.common.entity.TripStatus;
 import com.ricex.cartracker.common.util.JsonDateMillisecondsEpochDeserializer;
 import com.ricex.cartracker.common.util.JsonTripStatusSerializer;
-import com.ricex.cartracker.common.viewmodel.EntityResponse;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -152,7 +154,8 @@ public abstract class AbstractRequest<T> implements Request<T> {
 	 * @return The results of the request, or null if there was an error
 	 * @throws RequestException If an error occurred while making the request
 	 */
-	protected RequestResponse<T> getForObject(String url, ParameterizedTypeReference<EntityResponse<T>> responseType, Object... urlVariables) throws RequestException {
+	protected RequestResponse<T> getForObject(String url, ParameterizedTypeReference<T> responseType,
+											  Object... urlVariables) throws RequestException {
 		return makeRequest(url, HttpMethod.GET, HttpEntity.EMPTY, responseType, urlVariables);
 	}
 	
@@ -166,8 +169,12 @@ public abstract class AbstractRequest<T> implements Request<T> {
 	 * @throws RequestException If an error occurred while making the request
 	 */
 	
-	protected RequestResponse<T> postForObject(String url, Object requestBody, ParameterizedTypeReference<EntityResponse<T>> responseType, Object... urlVariables) throws RequestException {
-		return makeRequest(url, HttpMethod.POST, new HttpEntity<Object>(requestBody), responseType, urlVariables);
+	protected RequestResponse<T> postForObject(String url, Object requestBody,
+											   ParameterizedTypeReference<T> responseType,
+											   Object... urlVariables) throws RequestException {
+
+		return makeRequest(url, HttpMethod.POST, new HttpEntity<Object>(requestBody), responseType,
+				urlVariables);
 	}
 	
 	/** Performs a put to the specified url, and returns the results as the specified type
@@ -180,14 +187,18 @@ public abstract class AbstractRequest<T> implements Request<T> {
 	 * @throws RequestException If an error occurred while making the request
 	 */
 	
-	protected RequestResponse<T> putForObject(String url, Object requestBody, ParameterizedTypeReference<EntityResponse<T>> responseType, Object... urlVariables) throws RequestException {
-		return makeRequest(url, HttpMethod.PUT, new HttpEntity<Object>(requestBody), responseType, urlVariables);
+	protected RequestResponse<T> putForObject(String url, Object requestBody,
+											  ParameterizedTypeReference<T> responseType,
+											  Object... urlVariables) throws RequestException {
+
+		return makeRequest(url, HttpMethod.PUT, new HttpEntity<Object>(requestBody),
+				responseType, urlVariables);
 	}
 	
 	/** Makes a generic request to the server with the specified attributes
 	 * 
-	 *  Automatically adds and requests the authentication to each request. Will automatically retry the request if the
-	 *  	Authentication token has expired	
+	 *  Automatically adds and requests the authentication to each request. Will automatically
+	 *  	retry the request if the Authentication token has expired
 	 *  
 	 * @param url The URL to make the request on
 	 * @param method The HTTP method of the request
@@ -198,7 +209,10 @@ public abstract class AbstractRequest<T> implements Request<T> {
 	 * @throws RequestException If an error occurred while making the request
 	 */	
 	
-	protected RequestResponse<T> makeRequest(String url, HttpMethod method, HttpEntity<?> requestEntity, ParameterizedTypeReference<EntityResponse<T>> responseType, Object... urlVariables) throws RequestException {	
+	protected RequestResponse<T> makeRequest(String url, HttpMethod method, HttpEntity<?> requestEntity,
+											 ParameterizedTypeReference<T> responseType,
+											 Object... urlVariables) throws RequestException {
+
 		url = processUrl(url);
 		HttpEntity<?> entity = requestEntity;
 
@@ -207,13 +221,16 @@ public abstract class AbstractRequest<T> implements Request<T> {
 			entity = addAuthenticationHeaders(requestEntity);
 		}
 		try {
-			ResponseEntity<EntityResponse<T>> results = restTemplate.exchange(url, method, entity, responseType, urlVariables);
-			return processSucessfulRequestResponse(results, url, method, requestEntity, responseType, urlVariables);
+			ResponseEntity<T> results = restTemplate.exchange(url, method, entity, responseType,
+					urlVariables);
+			return processSucessfulRequestResponse(results, url, method, requestEntity, responseType,
+					urlVariables);
 		}
 		catch (HttpStatusCodeException e) {
 			String responseBody = e.getResponseBodyAsString();
 			HttpStatus status = e.getStatusCode();
-			return processErrorRequestResponse(responseBody, status, url, method, requestEntity, responseType, urlVariables);
+			return processErrorRequestResponse(responseBody, status, url, method, requestEntity,
+					responseType, urlVariables);
 		}
 	}
 
@@ -226,11 +243,12 @@ public abstract class AbstractRequest<T> implements Request<T> {
 	}
 
 	protected boolean isLoginUrl(String url) {
-		return getTokenLoginAddress().equalsIgnoreCase(url) || getPasswordLoginAddress().equalsIgnoreCase(url);
+		return getTokenLoginAddress().equalsIgnoreCase(url) ||
+				getPasswordLoginAddress().equalsIgnoreCase(url);
 	}
 	
-	/** Adds the appropriate Authentication headers to the given HttpEntity. The entity passed in is not modified. New entity
-	 * 		is returned.
+	/** Adds the appropriate Authentication headers to the given HttpEntity. The entity passed in
+	 * 	is not modified. New entity is returned.
 	 * 
 	 * @param entity The HttpEntity to add the request headers
 	 * @return The new HttpEntity with the updated Authentication Headers
@@ -257,9 +275,14 @@ public abstract class AbstractRequest<T> implements Request<T> {
 	 * @param urlVariables The url variables of the request
 	 * @return The processed results of the request, the request body or null if there was an error
 	 */
-	private RequestResponse<T> processSucessfulRequestResponse(ResponseEntity<EntityResponse<T>> responseEntity, String url, HttpMethod method, HttpEntity<?> requestEntity, 
-			ParameterizedTypeReference<EntityResponse<T>> responseType, Object... urlVariables) throws RequestException {		
-		RequestResponse<T> response = new RequestResponse<T>(responseEntity.getBody(), responseEntity.getStatusCode());		
+	private RequestResponse<T> processSucessfulRequestResponse(ResponseEntity<T> responseEntity,
+															   String url, HttpMethod method,
+															   HttpEntity<?> requestEntity,
+															   ParameterizedTypeReference<T> responseType,
+															   Object... urlVariables) throws RequestException {
+
+		RequestResponse<T> response = new SuccessResponse<T>(responseEntity.getBody(),
+				responseEntity.getStatusCode());
 	
 		//if the code wasn't UNAUTHORIZED, and we need a session token, extract it from the response header
 		if (sessionContext.needSessionToken()) {
@@ -284,12 +307,13 @@ public abstract class AbstractRequest<T> implements Request<T> {
 	 * @param urlVariables The url variables of the request
 	 * @return The processed results of the request, the request body or null if there was an error
 	 */
-	private RequestResponse<T> processErrorRequestResponse(String responseBody, HttpStatus status, String url, HttpMethod method, 
-			HttpEntity<?> requestEntity, ParameterizedTypeReference<EntityResponse<T>> responseType, Object... urlVariables) throws RequestException {
+	private RequestResponse<T> processErrorRequestResponse(String responseBody, HttpStatus status,
+														   String url, HttpMethod method,
+														   HttpEntity<?> requestEntity,
+														   ParameterizedTypeReference<T> responseType,
+														   Object... urlVariables) throws RequestException {
 		
-		RequestResponse<T> response = new RequestResponse<T>(null, responseBody, status);		
-
-
+		RequestResponse<T> response = new ErrorResponse<T>(responseBody, status);
 
 		if (status == HttpStatus.UNAUTHORIZED) {
 			//401 was returned, prompt the user to login
@@ -314,8 +338,8 @@ public abstract class AbstractRequest<T> implements Request<T> {
 	
 	/** Processes the Response received after making a request.
 	 * 
-	 *  If the response is valid (server returned Http OK) then the object the server responded with is returned. Otherwise an exception
-	 *  	is thrown indicating the error that occurred.
+	 *  If the response is valid (server returned Http OK) then the object the server responded with
+	 *  	is returned. Otherwise an exception is thrown indicating the error that occurred.
 	 * 
 	 * @param response The response received from the server
 	 * @return The parsed response object

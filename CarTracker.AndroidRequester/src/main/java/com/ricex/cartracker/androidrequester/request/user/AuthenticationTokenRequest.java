@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.ricex.cartracker.androidrequester.request.AbstractRequest;
 import com.ricex.cartracker.androidrequester.request.ApplicationPreferences;
-import com.ricex.cartracker.androidrequester.request.RequestResponse;
+import com.ricex.cartracker.androidrequester.request.response.RequestResponse;
 import com.ricex.cartracker.androidrequester.request.exception.RequestException;
 import com.ricex.cartracker.androidrequester.request.type.StringResponseType;
 

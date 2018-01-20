@@ -1,11 +1,10 @@
 package com.ricex.cartracker.androidrequester.request.tracker;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.ricex.cartracker.androidrequester.request.AbstractRequest;
 import com.ricex.cartracker.androidrequester.request.ApplicationPreferences;
-import com.ricex.cartracker.androidrequester.request.RequestResponse;
+import com.ricex.cartracker.androidrequester.request.response.RequestResponse;
 import com.ricex.cartracker.androidrequester.request.exception.RequestException;
 import com.ricex.cartracker.androidrequester.request.type.BulkUploadResponseType;
 import com.ricex.cartracker.common.entity.Trip;

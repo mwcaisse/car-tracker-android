@@ -2,11 +2,10 @@ package com.ricex.cartracker.androidrequester.request.user;
 
 import com.ricex.cartracker.androidrequester.request.AbstractRequest;
 import com.ricex.cartracker.androidrequester.request.ApplicationPreferences;
-import com.ricex.cartracker.androidrequester.request.RequestResponse;
+import com.ricex.cartracker.androidrequester.request.response.RequestResponse;
 import com.ricex.cartracker.androidrequester.request.exception.RequestException;
 import com.ricex.cartracker.androidrequester.request.type.BooleanResponseType;
 import com.ricex.cartracker.common.auth.AuthToken;
-import com.ricex.cartracker.common.viewmodel.BooleanResponse;
 
 /** A Server Request to login to the server to obtain a Session Token.
  * 
