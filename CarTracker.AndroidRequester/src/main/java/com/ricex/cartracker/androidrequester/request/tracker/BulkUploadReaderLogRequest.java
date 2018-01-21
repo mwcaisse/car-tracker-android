@@ -5,8 +5,10 @@ import com.ricex.cartracker.androidrequester.request.ApplicationPreferences;
 import com.ricex.cartracker.androidrequester.request.response.RequestResponse;
 import com.ricex.cartracker.androidrequester.request.exception.RequestException;
 import com.ricex.cartracker.androidrequester.request.type.BulkUploadResponseType;
+import com.ricex.cartracker.common.entity.ReaderLog;
 import com.ricex.cartracker.common.viewmodel.BulkUploadResult;
-import com.ricex.cartracker.common.viewmodel.ReaderLogUpload;
+import com.ricex.cartracker.common.viewmodel.BulkUploadViewModel;
+import com.ricex.cartracker.common.viewmodel.entity.ReaderLogViewModel;
 
 import java.util.List;
 
@@ -15,13 +17,14 @@ import java.util.List;
  */
 public class BulkUploadReaderLogRequest extends AbstractRequest<List<BulkUploadResult>> {
 
-    private final List<ReaderLogUpload> readerLogs;
+    private final List<BulkUploadViewModel<ReaderLogViewModel>> readerLogs;
 
     /** Creates a new Bulk Upload request for the given logs
      *
      * @param applicationPreferences
      */
-    public BulkUploadReaderLogRequest(ApplicationPreferences applicationPreferences, List<ReaderLogUpload> readerLogs) {
+    public BulkUploadReaderLogRequest(ApplicationPreferences applicationPreferences,
+                                      List<BulkUploadViewModel<ReaderLogViewModel>> readerLogs) {
         super(applicationPreferences);
         this.readerLogs = readerLogs;
     }

@@ -11,12 +11,12 @@ import com.ricex.cartracker.android.data.manager.ReaderLogManager;
 import com.ricex.cartracker.android.data.util.DatabaseHelper;
 import com.ricex.cartracker.android.settings.CarTrackerSettings;
 import com.ricex.cartracker.androidrequester.request.exception.RequestException;
-import com.ricex.cartracker.androidrequester.request.tracker.BulkUploadReaderLogRequest;
 import com.ricex.cartracker.androidrequester.request.tracker.CarTrackerRequestFactory;
 import com.ricex.cartracker.common.entity.Trip;
 import com.ricex.cartracker.common.viewmodel.BulkUploadResult;
-import com.ricex.cartracker.common.viewmodel.ReaderLogUpload;
-import com.ricex.cartracker.common.viewmodel.ReadingUpload;
+import com.ricex.cartracker.common.viewmodel.BulkUploadViewModel;
+import com.ricex.cartracker.common.viewmodel.entity.ReaderLogViewModel;
+import com.ricex.cartracker.common.viewmodel.entity.ReadingViewModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,15 +70,16 @@ public class WebServiceSyncer {
 
             for (int startIndex = 0; startIndex < unsyncedLogs.size(); startIndex += BULK_UPLOAD_SIZE) {
                 List<ReaderLog> toUpload = unsyncedLogs.subList(startIndex, Math.min(startIndex + BULK_UPLOAD_SIZE, unsyncedLogs.size()));
-                List<ReaderLogUpload> uploads = new ArrayList<ReaderLogUpload>();
+                List<BulkUploadViewModel<ReaderLogViewModel>> uploads = new ArrayList<BulkUploadViewModel<ReaderLogViewModel>>();
 
                 for (ReaderLog log : toUpload) {
-                    ReaderLogUpload upload = new ReaderLogUpload();
-
-                    upload.setType(log.getType());
-                    upload.setMessage(log.getMessage());
-                    upload.setDate(log.getDate());
+                    BulkUploadViewModel<ReaderLogViewModel> upload = new BulkUploadViewModel<ReaderLogViewModel>();
+                    ReaderLogViewModel model = new ReaderLogViewModel();
+                    model.setType(log.getType());
+                    model.setMessage(log.getMessage());
+                    model.setDate(log.getDate());
                     upload.setUuid(Long.toString(log.getId()));
+                    upload.setData(model);
 
                     uploads.add(upload);
 
@@ -160,26 +161,27 @@ public class WebServiceSyncer {
 
         for (int startIndex = 0; startIndex < unsyncedReadings.size(); startIndex += BULK_UPLOAD_SIZE) {
             List<RawReading> toUpload = unsyncedReadings.subList(startIndex, Math.min(startIndex + BULK_UPLOAD_SIZE, unsyncedReadings.size()));
-            List<ReadingUpload> uploads = new ArrayList<ReadingUpload>();
+            List<BulkUploadViewModel<ReadingViewModel>> uploads = new ArrayList<BulkUploadViewModel<ReadingViewModel>>();
 
             for (RawReading rawReading : toUpload) {
-                ReadingUpload upload = new ReadingUpload();
+                BulkUploadViewModel<ReadingViewModel> upload = new BulkUploadViewModel<ReadingViewModel>();
+                ReadingViewModel model = new ReadingViewModel();
 
                 upload.setUuid(Long.toString(rawReading.getId()));
-                upload.setReadDate(rawReading.getReadDate());
-                upload.setTripId(trip.getServerId());
-                upload.setLatitude(rawReading.getLatitude());
-                upload.setLongitude(rawReading.getLongitude());
-                upload.setAirIntakeTemperature(rawReading.getAirIntakeTemperature());
-                upload.setAmbientAirTemperature(rawReading.getAmbientAirTemperature());
-                upload.setEngineCoolantTemperature(rawReading.getEngineCoolantTemperature());
-                upload.setOilTemperature(rawReading.getOilTemperature());
-                upload.setEngineRPM(rawReading.getEngineRPM());
-                upload.setSpeed(rawReading.getSpeed());
-                upload.setMassAirFlow(rawReading.getMassAirFlow());
-                upload.setThrottlePosition(rawReading.getThrottlePosition());
-                upload.setFuelType(rawReading.getFuelType());
-                upload.setFuelLevel(rawReading.getFuelLevel());
+                model.setReadDate(rawReading.getReadDate());
+                model.setTripId(trip.getServerId());
+                model.setLatitude(rawReading.getLatitude());
+                model.setLongitude(rawReading.getLongitude());
+                model.setAirIntakeTemperature(rawReading.getAirIntakeTemperature());
+                model.setAmbientAirTemperature(rawReading.getAmbientAirTemperature());
+                model.setEngineCoolantTemperature(rawReading.getEngineCoolantTemperature());
+                model.setOilTemperature(rawReading.getOilTemperature());
+                model.setEngineRPM(rawReading.getEngineRPM());
+                model.setSpeed(rawReading.getSpeed());
+                model.setMassAirFlow(rawReading.getMassAirFlow());
+                model.setThrottlePosition(rawReading.getThrottlePosition());
+                model.setFuelType(rawReading.getFuelType());
+                model.setFuelLevel(rawReading.getFuelLevel());
 
                 uploads.add(upload);
             }

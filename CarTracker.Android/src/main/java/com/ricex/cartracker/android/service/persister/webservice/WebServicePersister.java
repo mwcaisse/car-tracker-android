@@ -11,7 +11,8 @@ import com.ricex.cartracker.androidrequester.request.tracker.EndTripRequest;
 import com.ricex.cartracker.androidrequester.request.tracker.StartTripRequest;
 import com.ricex.cartracker.common.entity.Trip;
 import com.ricex.cartracker.common.viewmodel.BulkUploadResult;
-import com.ricex.cartracker.common.viewmodel.ReadingUpload;
+import com.ricex.cartracker.common.viewmodel.BulkUploadViewModel;
+import com.ricex.cartracker.common.viewmodel.entity.ReadingViewModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,7 +77,7 @@ public class WebServicePersister implements Persister {
 
                 if (uploads.size() > 0) {
                     Log.i(LOG_TAG, "Starting a reading upload!");
-                    List<ReadingUpload> readingUploads;
+                    List<BulkUploadViewModel<ReadingViewModel>> readingUploads;
                     synchronized (monitor) {
                         readingUploads = getReadingUploads();
                     }
@@ -116,30 +117,32 @@ public class WebServicePersister implements Persister {
 
     }
 
-    public List<ReadingUpload> getReadingUploads() {
-        List<ReadingUpload> readingUploads = new ArrayList<ReadingUpload>();
+    public List<BulkUploadViewModel<ReadingViewModel>> getReadingUploads() {
+        List<BulkUploadViewModel<ReadingViewModel>> readingUploads = new ArrayList<BulkUploadViewModel<ReadingViewModel>>();
 
         for (PersisterReadingUpload upload : uploads.values()) {
-            ReadingUpload readingUpload = new ReadingUpload();
+            BulkUploadViewModel<ReadingViewModel> readingUpload = new BulkUploadViewModel<ReadingViewModel>();
+            ReadingViewModel model = new ReadingViewModel();
 
             readingUpload.setUuid(upload.getUid());
-            readingUpload.setReadDate(upload.getReading().getReadDate());
-            readingUpload.setTripId(trip.getId());
-            readingUpload.setAirIntakeTemperature(convertStringToDouble(upload.getReading().getAirIntakeTemp()));
-            readingUpload.setAmbientAirTemperature(convertStringToDouble(upload.getReading().getAmbientAirTemp()));
-            readingUpload.setEngineCoolantTemperature(convertStringToDouble(upload.getReading().getEngineCoolantTemp()));
-            readingUpload.setOilTemperature(convertStringToDouble(upload.getReading().getOilTemp()));
-            readingUpload.setEngineRPM(convertStringToDouble(upload.getReading().getEngineRPM()));
-            readingUpload.setSpeed(convertStringToDouble(upload.getReading().getSpeed()));
-            readingUpload.setMassAirFlow(convertStringToDouble(upload.getReading().getMaf()));
-            readingUpload.setThrottlePosition(convertStringToDouble(upload.getReading().getThrottlePosition()));
-            readingUpload.setFuelType(upload.getReading().getFuelType());
-            readingUpload.setFuelLevel(convertStringToDouble(upload.getReading().getFuelLevel()));
+            readingUpload.setData(model);
+            model.setReadDate(upload.getReading().getReadDate());
+            model.setTripId(trip.getId());
+            model.setAirIntakeTemperature(convertStringToDouble(upload.getReading().getAirIntakeTemp()));
+            model.setAmbientAirTemperature(convertStringToDouble(upload.getReading().getAmbientAirTemp()));
+            model.setEngineCoolantTemperature(convertStringToDouble(upload.getReading().getEngineCoolantTemp()));
+            model.setOilTemperature(convertStringToDouble(upload.getReading().getOilTemp()));
+            model.setEngineRPM(convertStringToDouble(upload.getReading().getEngineRPM()));
+            model.setSpeed(convertStringToDouble(upload.getReading().getSpeed()));
+            model.setMassAirFlow(convertStringToDouble(upload.getReading().getMaf()));
+            model.setThrottlePosition(convertStringToDouble(upload.getReading().getThrottlePosition()));
+            model.setFuelType(upload.getReading().getFuelType());
+            model.setFuelLevel(convertStringToDouble(upload.getReading().getFuelLevel()));
 
             //if there is a location associated with the reading, add it to the upload
             if (null != upload.getReading().getLocation()) {
-                readingUpload.setLatitude(upload.getReading().getLocation().getLatitude());
-                readingUpload.setLongitude(upload.getReading().getLocation().getLongitude());
+                model.setLatitude(upload.getReading().getLocation().getLatitude());
+                model.setLongitude(upload.getReading().getLocation().getLongitude());
             }
 
             readingUploads.add(readingUpload);

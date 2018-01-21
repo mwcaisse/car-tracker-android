@@ -28,8 +28,10 @@ import com.ricex.cartracker.androidrequester.request.response.RequestResponse;
 import com.ricex.cartracker.androidrequester.request.response.SuccessResponse;
 import com.ricex.cartracker.androidrequester.request.user.LoginTokenRequest;
 import com.ricex.cartracker.common.auth.TokenAuthentication;
+import com.ricex.cartracker.common.entity.LogType;
 import com.ricex.cartracker.common.entity.TripStatus;
 import com.ricex.cartracker.common.util.JsonDateMillisecondsEpochDeserializer;
+import com.ricex.cartracker.common.util.JsonLogTypeSerializer;
 import com.ricex.cartracker.common.util.JsonTripStatusSerializer;
 
 import android.os.AsyncTask;
@@ -70,6 +72,7 @@ public abstract class AbstractRequest<T> implements Request<T> {
 		Gson gson = new GsonBuilder().setDateFormat(DateFormat.LONG)
 				.registerTypeAdapter(Date.class, new JsonDateMillisecondsEpochDeserializer())
 				.registerTypeAdapter(TripStatus.class, new JsonTripStatusSerializer())
+				.registerTypeAdapter(LogType.class, new JsonLogTypeSerializer())
 				.create();
 		
 		//create the Gson message converter for spring, and set its Gson

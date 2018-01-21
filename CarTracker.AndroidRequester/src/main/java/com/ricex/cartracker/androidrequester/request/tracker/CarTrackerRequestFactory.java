@@ -10,8 +10,9 @@ import com.ricex.cartracker.androidrequester.request.user.LoginTokenRequest;
 import com.ricex.cartracker.common.entity.Car;
 import com.ricex.cartracker.common.entity.ReaderLog;
 import com.ricex.cartracker.common.entity.Trip;
-import com.ricex.cartracker.common.viewmodel.ReaderLogUpload;
-import com.ricex.cartracker.common.viewmodel.ReadingUpload;
+import com.ricex.cartracker.common.viewmodel.BulkUploadViewModel;
+import com.ricex.cartracker.common.viewmodel.entity.ReaderLogViewModel;
+import com.ricex.cartracker.common.viewmodel.entity.ReadingViewModel;
 
 public class CarTrackerRequestFactory extends AbstractRequestFactory {
 
@@ -25,17 +26,21 @@ public class CarTrackerRequestFactory extends AbstractRequestFactory {
 	 * @param readings The readings to upload
 	 * @return The request
 	 */
-	public BulkUploadReadingRequest createBulkUploadReadingRequest(long tripId, List<ReadingUpload> readings) {
+	public BulkUploadReadingRequest createBulkUploadReadingRequest(long tripId,
+			List<BulkUploadViewModel<ReadingViewModel>> readings) {
+
 		return new BulkUploadReadingRequest(applicationPreferences, tripId, readings);
 	}
-	
+
 	/** Creates a new Bulk Upload Reading Request
 	 * 
 	 * @param trip The trip to upload the readings to
 	 * @param readings The readings to upload
 	 * @return The request
 	 */
-	public BulkUploadReadingRequest createBulkUploadReadingRequest(Trip trip, List<ReadingUpload> readings) {
+	public BulkUploadReadingRequest createBulkUploadReadingRequest(Trip trip,
+		   List<BulkUploadViewModel<ReadingViewModel>> readings) {
+
 		return new BulkUploadReadingRequest(applicationPreferences, trip, readings);
 	}
 
@@ -44,7 +49,9 @@ public class CarTrackerRequestFactory extends AbstractRequestFactory {
 	 * @param logs The logs to upload
 	 * @return The request
      */
-	public BulkUploadReaderLogRequest createBulkUploadReaderLogRequest(List<ReaderLogUpload> logs) {
+	public BulkUploadReaderLogRequest createBulkUploadReaderLogRequest(
+			List<BulkUploadViewModel<ReaderLogViewModel>> logs) {
+
 		return new BulkUploadReaderLogRequest(applicationPreferences, logs);
 	}
 	
