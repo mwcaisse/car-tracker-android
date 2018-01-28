@@ -26,7 +26,8 @@ public class CreateTripRequest extends AbstractRequest<Trip> {
 
     @Override
     protected RequestResponse<Trip> executeRequest() throws RequestException {
-        return postForObject(serverAddress + "/trip/", trip, new TripResponseType());
+        return postForObject(serverAddress + "/car/{carId}/trip/", trip, new TripResponseType(),
+                trip.getCarId());
     }
 
 }
