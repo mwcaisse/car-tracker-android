@@ -231,6 +231,7 @@ public class WebServiceSyncer {
                 ReadingViewModel model = new ReadingViewModel();
 
                 upload.setUuid(Long.toString(rawReading.getId()));
+                upload.setData(model);
                 model.setReadDate(rawReading.getReadDate());
                 model.setTripId(trip.getServerId());
                 model.setLatitude(rawReading.getLatitude());
