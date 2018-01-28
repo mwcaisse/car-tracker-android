@@ -63,11 +63,21 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
             warn(LOG_TAG, "Couldn't initialize OBD Reader");
             return false;
         }
-
         //initialize the gpsReader... This method itself won't return success status
         //it has callbacks, which we should check at some point in time
         gpsReader.start();
         info(LOG_TAG, "OBB connection established, starting data collection loop..");
+
+        String vin = reader.getCarVin();
+        if (null == vin) {
+            info(LOG_TAG, "Couldn't get the VIN for the car, can't persist anything");
+            //we couldn't get the VIN for the car, we can't persist anything
+            return false;
+        }
+
+        info(LOG_TAG, "Starting persister with VIN: " + vin);
+        persister.start(vin);
+
         return true;
     }
 
@@ -109,6 +119,8 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
     }
 
     public void performLoopFinilization() {
+        //TODO: Tell the persister to end the trip
+
         info(LOG_TAG, "OBD Task Loop existing...");
     }
 
@@ -160,7 +172,7 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
     public void error(String tag, String message, Throwable ex) {
         Log.e(tag, message, ex);
         service.addMessage(message + " : " + ex.getMessage());
-        logger.error(tag, message);
+        logger.error(tag, message, ex);
     }
 
 }

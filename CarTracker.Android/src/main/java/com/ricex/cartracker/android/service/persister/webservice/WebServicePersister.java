@@ -27,8 +27,6 @@ public class WebServicePersister implements Persister {
 
     private static final String LOG_TAG = "ODBWEBSERVICEPERSISTER";
 
-    private static final String CAR_VIN = "JF1VA1E66G9807558";
-
     private CarTrackerSettings settings;
 
     private Object monitor;
@@ -56,8 +54,6 @@ public class WebServicePersister implements Persister {
 
         running = true;
 
-        startTrip();
-
         while (running) {
             try {
 
@@ -67,10 +63,6 @@ public class WebServicePersister implements Persister {
                 //we were awoke, check if we are still running
                 if (!running) {
                     break;
-                }
-
-                if (null == trip) {
-                    startTrip();
                 }
 
                 //we have been notified, most likely uploads is above the limit
@@ -151,6 +143,7 @@ public class WebServicePersister implements Persister {
         return readingUploads;
     }
 
+
     private double convertStringToDouble(String val) {
         val.replaceAll("[^\\d.-]", "");
         try {
@@ -161,9 +154,9 @@ public class WebServicePersister implements Persister {
         }
     }
 
-    public void startTrip() {
+    public void start(String vin) {
         try {
-            trip = new StartTripRequest(settings, CAR_VIN).execute();
+            trip = new StartTripRequest(settings, vin).execute();
         }
         catch (RequestException e) {
             Log.e(LOG_TAG, "Error starting trip!", e);

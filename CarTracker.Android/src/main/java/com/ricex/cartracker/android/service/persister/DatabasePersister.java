@@ -9,6 +9,7 @@ import com.ricex.cartracker.android.data.manager.RawTripManager;
 import com.ricex.cartracker.android.data.util.DatabaseHelper;
 import com.ricex.cartracker.android.model.OBDReading;
 import com.ricex.cartracker.android.service.WebServiceSyncer;
+import com.ricex.cartracker.android.service.logger.DatabaseLogger;
 import com.ricex.cartracker.android.settings.CarTrackerSettings;
 import com.ricex.cartracker.common.entity.Trip;
 import com.ricex.cartracker.common.entity.TripStatus;
@@ -23,8 +24,6 @@ import java.util.List;
 public class DatabasePersister implements Persister {
 
     private static final String LOG_TAG = "CT_DB_PERSISTER";
-
-    private static final String CAR_VIN = "JF1VA1E66G9807558";
 
     private static final int BUFFER_SIZE = 100;
 
@@ -50,10 +49,14 @@ public class DatabasePersister implements Persister {
 
     private WebServiceSyncer webServiceSyncer;
 
+    private DatabaseLogger logger;
+
     public DatabasePersister(CarTrackerSettings settings, DatabaseHelper databaseHelper) {
         this.settings = settings;
         this.databaseHelper = databaseHelper;
         this.webServiceSyncer = new WebServiceSyncer(databaseHelper, settings);
+        this.logger = new DatabaseLogger(databaseHelper);
+
 
         monitor = new Object();
         waitMonitor = new Object();
@@ -70,16 +73,10 @@ public class DatabasePersister implements Persister {
 
         readings = new ArrayList<OBDReading>();
 
-        startTrip();
-
         while (running) {
             try {
                 synchronized (waitMonitor) {
                     waitMonitor.wait();
-                }
-
-                if (null == trip) {
-                    startTrip();
                 }
 
                 if (readings.size() > BUFFER_SIZE) {
@@ -88,7 +85,6 @@ public class DatabasePersister implements Persister {
 
                 //do this check at the end, that way it still finishes the upload / exist gracefully.
                 if (!running) {
-                    Log.i(LOG_TAG, "Database Persister run we aren't running, breaking loop");
                     break;
                 }
             }
@@ -109,8 +105,6 @@ public class DatabasePersister implements Persister {
             stopMonitor.notifyAll();
         }
 
-        Log.i(LOG_TAG, "Database Persister run returning.");
-
     }
 
     protected void persistReadings() {
@@ -121,7 +115,7 @@ public class DatabasePersister implements Persister {
             }
             else {
                 //woop woop, error here
-                Log.w(LOG_TAG, "Couldn't persist readings to database!");
+                logger.warn(LOG_TAG, "Couldn't persist readings to database!");
             }
         }
     }
@@ -166,13 +160,15 @@ public class DatabasePersister implements Persister {
         }
     }
 
-    public void startTrip() {
+    public void startTrip(String vin) {
+        logger.info(LOG_TAG, "Starting trip for car with VIN: " + vin);
         trip = new RawTrip();
         trip.setStartDate(new Date());
         trip.setStatus(TripStatus.STARTED);
+        trip.setCarVin(vin);
 
         if (!tripManager.create(trip)) {
-            Log.w(LOG_TAG, "Could not start trip!");
+            logger.warn(LOG_TAG, "Could not start trip!");
             running = false;
         }
     }
@@ -183,9 +179,20 @@ public class DatabasePersister implements Persister {
             trip.setStatus(TripStatus.FINISHED);
 
             if (!tripManager.update(trip)) {
-                Log.w(LOG_TAG, "Could not end trip!");
+                logger.warn(LOG_TAG, "Could not end trip!");
             }
         }
+        else {
+            logger.error(LOG_TAG, "Tried to end trip, but trip was null!");
+        }
+    }
+
+    /** Starts a trip for the car with the given VIN
+     *
+     * @param vin The VIN of the car
+     */
+    public void start(String vin) {
+        startTrip(vin);
     }
 
     @Override
@@ -208,8 +215,6 @@ public class DatabasePersister implements Persister {
             synchronized (waitMonitor) {
                 waitMonitor.notify();
             }
-
-            Log.i(LOG_TAG, "Database Persister stop waiting on stopMonitor");
             try {
                 synchronized (stopMonitor)  {
                     stopMonitor.wait();
@@ -219,7 +224,6 @@ public class DatabasePersister implements Persister {
 
             }
 
-            Log.i(LOG_TAG, "Database Persister stop, no longer waiting on stopMonitor");
         }
     }
 

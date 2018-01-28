@@ -23,8 +23,10 @@ import com.github.pires.obd.commands.temperature.AmbientAirTemperatureCommand;
 import com.github.pires.obd.commands.temperature.EngineCoolantTemperatureCommand;
 import com.github.pires.obd.enums.AvailableCommandNames;
 import com.github.pires.obd.enums.ObdProtocols;
+import com.github.pires.obd.exceptions.NoDataException;
 import com.github.pires.obd.exceptions.UnsupportedCommandException;
 import com.ricex.cartracker.android.model.OBDReading;
+import com.ricex.cartracker.android.obd.ObdCommandExecutor;
 import com.ricex.cartracker.android.obd.device.BluetoothObdDevice;
 import com.ricex.cartracker.android.obd.device.ObdDevice;
 import com.ricex.cartracker.android.obd.device.ObdDeviceConnectionFailedException;
@@ -44,7 +46,8 @@ public class BluetoothOBDReader implements OBDReader {
 
     private static final String LOG_TAG = "BTOBDReader";
 
-    private ObdDevice device;
+
+    private final ObdCommandExecutor commandExecutor;
 
     private CarTrackerSettings settings;
 
@@ -53,17 +56,18 @@ public class BluetoothOBDReader implements OBDReader {
     public BluetoothOBDReader(ServiceLogger logger, CarTrackerSettings settings) {
         this.logger = logger;
         this.settings = settings;
-        this.device = new BluetoothObdDevice(settings.getBluetoothDeviceAddress());
+        ObdDevice device = new BluetoothObdDevice(settings.getBluetoothDeviceAddress());
+        this.commandExecutor = new ObdCommandExecutor(device, logger);
     }
 
     public boolean initialize() {
         //check if we are already connected, if so there is nothing to do
-        if (device.isConnected()) {
+        if (commandExecutor.isInitialized()) {
             return true;
         }
 
         logger.info(LOG_TAG, "Initializing Bluetooth OBD Reader!");
-        return initializeBluetoothConnection() && initiateOBDConnection();
+        return commandExecutor.initialize();
     }
 
     public OBDReading read() throws ConnectionLostException {
@@ -79,40 +83,23 @@ public class BluetoothOBDReader implements OBDReader {
         return readDataFromJobs(jobs);
     }
 
-    protected boolean initializeBluetoothConnection() {
-        try {
-            device.connect();
-        } catch (ObdDeviceConnectionFailedException e) {
-            Log.w(LOG_TAG, "Failed to connect to ObdDevice", e);
-            return false;
+    /** Retreives the VIN of the car from the reader
+     *
+     * @return The car's VIN or null if read failed
+     */
+    public String getCarVin() {
+        OBDCommandJob vinJob = new OBDCommandJob(new VinCommand());
+        executeOBDJob(vinJob);
+
+        String vin = null;
+        if (vinJob.getStatus() == OBDCommandStatus.FINISHED) {
+            vin = vinJob.getCommand().getCalculatedResult();
         }
-        return true;
-    }
-
-    protected boolean initiateOBDConnection() {
-        try {
-
-            //initilize the commands
-            //copied from OBD Gateway service in OBD Reader
-            runOBDCommand(new ObdResetCommand());
-            runOBDCommand(new EchoOffCommand());
-
-            //send second time based on tests...
-            runOBDCommand(new EchoOffCommand());
-            runOBDCommand(new LineFeedOffCommand());
-            runOBDCommand(new TimeoutCommand(62));
-
-
-            runOBDCommand(new SelectProtocolCommand(ObdProtocols.AUTO));
-            runOBDCommand(new AmbientAirTemperatureCommand());
-
-            logger.info(LOG_TAG, "Successfully Initiated the OBD connection!");
+        else {
+            logger.warn(LOG_TAG, "Failed to fetch VIN for car");
         }
-        catch (IOException | InterruptedException e) {
-            logger.error(LOG_TAG, "Failed to initiate the OBD connection!", e);
-            return false;
-        }
-        return true;
+
+        return vin;
     }
 
     protected List<OBDCommandJob> createJobs() {
@@ -145,7 +132,9 @@ public class BluetoothOBDReader implements OBDReader {
                 results = job.getCommand().getCalculatedResult();
             }
             else {
-                results = "NO DATA";
+                //If there was an error executing task, set result to 0 for now.
+                //TODO: Have a more verbose error handling scheme.
+                results = "0";
                 logger.warn(LOG_TAG, "Failed to collect data for command: " + commandName);
             }
 
@@ -198,16 +187,17 @@ public class BluetoothOBDReader implements OBDReader {
             if (job.getStatus() == OBDCommandStatus.NEW) {
                 job.setStatus(OBDCommandStatus.RUNNING);
 
-                if (device.isConnected()) {
-                    job.getCommand().run(device.getInputStream(), device.getOutputStream());
+                if (commandExecutor.isConnected()) {
+                    commandExecutor.runOBDCommand(job.getCommand());
+
+                    job.setStatus(OBDCommandStatus.FINISHED);
+                    job.setHasData(true);
                 }
                 else {
                     job.setStatus(OBDCommandStatus.CONNECTION_LOST);
                 }
             }
-            else {
-                //job wasn't new, can't run a old job
-            }
+
         }
         catch (UnsupportedCommandException e) {
             job.setStatus(OBDCommandStatus.NOT_SUPPORTED);
@@ -215,16 +205,13 @@ public class BluetoothOBDReader implements OBDReader {
         catch (IOException e) {
             job.setStatus(OBDCommandStatus.CONNECTION_LOST);
         }
+        catch (NoDataException e) {
+            job.setHasData(false);
+        }
         catch (Exception e) {
             job.setStatus(OBDCommandStatus.EXECUTION_ERROR);
         }
 
-        job.setStatus(OBDCommandStatus.FINISHED);
-    }
-
-    protected boolean runOBDCommand(ObdCommand command) throws IOException, InterruptedException {
-        command.run(device.getInputStream(), device.getOutputStream());
-        return true;
     }
 
     protected AvailableCommandNames parseCommandNameFromString(String commandName) {

@@ -54,6 +54,15 @@ public class CarTrackerRequestFactory extends AbstractRequestFactory {
 
 		return new BulkUploadReaderLogRequest(applicationPreferences, logs);
 	}
+
+	/** Creates a new Get Car Request
+	 *
+	 * @param vin The vin of the car
+	 * @return the request
+	 */
+	public GetCarRequest createGetCarRequest(String vin) {
+		return new GetCarRequest(applicationPreferences, vin);
+	}
 	
 	/** Creates a new Create Car Request
 	 * 
