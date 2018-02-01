@@ -15,6 +15,7 @@ import com.ricex.cartracker.androidrequester.request.exception.RequestException;
 import com.ricex.cartracker.androidrequester.request.tracker.CarTrackerRequestFactory;
 import com.ricex.cartracker.common.entity.Car;
 import com.ricex.cartracker.common.entity.Trip;
+import com.ricex.cartracker.common.entity.TripStatus;
 import com.ricex.cartracker.common.viewmodel.BulkUploadResult;
 import com.ricex.cartracker.common.viewmodel.BulkUploadViewModel;
 import com.ricex.cartracker.common.viewmodel.entity.ReaderLogViewModel;
@@ -129,19 +130,24 @@ public class WebServiceSyncer {
                 trip.setStartDate(unsyncedTrip.getStartDate());
                 trip.setEndDate(unsyncedTrip.getEndDate());
                 trip.setCarId(car.getId());
-                trip.setStatus(unsyncedTrip.getStatus());
+                trip.setStatus(TripStatus.NEW);
 
                 try {
                     trip = requestFactory.createCreateTripRequest(trip).execute();
 
                     unsyncedTrip.setServerId(trip.getId());
                     unsyncedTrip.setSyncedWithServer(true);
+
                     tripManager.update(unsyncedTrip);
 
                     syncReadings(unsyncedTrip);
+
+                    // Mark the trip's status as finished once we have synced its readings
+                    trip.setStatus(TripStatus.FINISHED);
+                    requestFactory.createUpdateTripRequest(trip).execute();
                 }
                 catch (RequestException e) {
-                    Log.w(LOG_TAG, "Error occured while creating a trip on the server!", e);
+                    Log.w(LOG_TAG, "Error occurred while creating a trip on the server!", e);
                 }
 
             }
