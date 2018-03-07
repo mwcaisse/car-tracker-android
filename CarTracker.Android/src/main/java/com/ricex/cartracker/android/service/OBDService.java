@@ -97,11 +97,9 @@ public class OBDService extends OrmLiteBaseService<DatabaseHelper> {
         //if the thread isn't running (stopped? or was just created)
         //start it
         if (!thread.isAlive()) {
-            Log.i(LOG_TAG, "Starting the OBD Service Task!");
             thread.start();
         }
         if (!persisterThread.isAlive()) {
-            Log.i(LOG_TAG, "Starting the Persister Task!");
             persisterThread.start();
         }
 
@@ -127,11 +125,8 @@ public class OBDService extends OrmLiteBaseService<DatabaseHelper> {
     }
 
     public void onDestroy() {
-        Log.i(LOG_TAG, "OBDService onDestroy calling task.stop");
         task.stop();
-        Log.i(LOG_TAG, "OBDService onDestroy calling persister.stop");
         persister.stop();
-        Log.i(LOG_TAG, "OBDService onDestroy calling super.onDestroy");
         super.onDestroy();
         SERVICE_RUNNING = false; //just in case
     }
