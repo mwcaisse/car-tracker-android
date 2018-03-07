@@ -36,6 +36,8 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
 
     private static final String LOG_TAG = "ODBSERVICETASK";
 
+    private int reconnectCount;
+
     public OBDServiceTask(OBDService service, CarTrackerSettings settings, Persister persister, GPSReader gpsReader, ServiceLogger logger) {
         super(settings.getODBReadingInterval());
         this.service = service;
@@ -43,6 +45,7 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
         this.persister = persister;
         this.gpsReader = gpsReader;
         this.logger = logger;
+        this.reconnectCount = 0;
         createReader();
     }
 
@@ -108,8 +111,6 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
 
         return true;
     }
-
-    private int reconnectCount;
 
     public boolean attemptReconnect() {
         if (reader.reconnect()) {
