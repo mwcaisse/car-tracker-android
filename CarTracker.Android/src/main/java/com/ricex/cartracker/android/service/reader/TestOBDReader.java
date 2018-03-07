@@ -18,6 +18,16 @@ public class TestOBDReader implements OBDReader {
     }
 
     @Override
+    public boolean reconnect() {
+        return true;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return true;
+    }
+
+    @Override
     public OBDReading read() {
         OBDReading reading = new OBDReading();
 

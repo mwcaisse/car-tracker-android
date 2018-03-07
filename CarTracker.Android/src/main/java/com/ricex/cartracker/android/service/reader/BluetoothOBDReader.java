@@ -102,6 +102,16 @@ public class BluetoothOBDReader implements OBDReader {
         return vin;
     }
 
+    @Override
+    public boolean reconnect() {
+        return commandExecutor.reconnect();
+    }
+
+    @Override
+    public boolean isConnected() {
+        return commandExecutor.isConnected();
+    }
+
     protected List<OBDCommandJob> createJobs() {
         List<OBDCommandJob> jobs = new ArrayList<OBDCommandJob>();
 

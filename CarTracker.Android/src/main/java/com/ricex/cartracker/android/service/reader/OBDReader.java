@@ -25,4 +25,12 @@ public interface OBDReader {
      */
     public String getCarVin();
 
+    /** Reconnects if connection is lost
+     *
+     * @return True if successful false otherwise
+     */
+    public boolean reconnect();
+
+    public boolean isConnected();
+
 }

@@ -79,6 +79,14 @@ public class ObdCommandExecutor {
         return true;
     }
 
+    public boolean reconnect() {
+        if (device.isConnected()) {
+            return true;
+        }
+        initialized = false;
+        return initialize();
+    }
+
     /** Executes the given command on the device
      *
      * @param command The command to execute

@@ -82,18 +82,9 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
     }
 
     public boolean performLoopLogic() {
-        if (!reader.initialize()) {
-            //we are not connected, and we couldn't establish a connection. stop service
-
-            //TODO: Possibly add a retry count? So that if it fails once, it will wait then
-            //      try to reconnect after a certian amount of time has passed
-            //      up to x times
-
-            info(LOG_TAG, "Stopping service, could not establish connection");
-            return false;
-
+        if (!reader.isConnected()) {
+            return attemptReconnect();
         }
-
         //perform the data read
         try {
             OBDReading data = reader.read();
@@ -109,12 +100,36 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
         }
         catch (ConnectionLostException e) {
             info(LOG_TAG, "Connection to ODB Device lost.");
-            return false; // we aren't connected anymore, don't continue
+            return attemptReconnect();
         }
         catch (Exception e) {
             error(LOG_TAG, "Error Occured while trying to read data!", e);
         }
 
+        return true;
+    }
+
+    private int reconnectCount;
+
+    public boolean attemptReconnect() {
+        if (reader.reconnect()) {
+            reconnectCount = 0;
+            info(LOG_TAG, "Reconnect successful!");
+        }
+        else {
+            if (reconnectCount > 3) {
+                //we've already tried to reconnect 3 times. its not going to happen
+                info(LOG_TAG, "Attempted to reconnect three times. Giving up.");
+                return false;
+            }
+            reconnectCount ++;
+            try {
+                Thread.sleep(1000 * 5); // wait 5 seconds
+            }
+            catch( InterruptedException e) {
+                // do nothing
+            }
+        }
         return true;
     }
 
