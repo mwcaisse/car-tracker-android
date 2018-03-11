@@ -87,6 +87,10 @@ public class ObdCommandExecutor {
         return initialize();
     }
 
+    public void disconnect() {
+        device.disconnect();
+    }
+
     /** Executes the given command on the device
      *
      * @param command The command to execute

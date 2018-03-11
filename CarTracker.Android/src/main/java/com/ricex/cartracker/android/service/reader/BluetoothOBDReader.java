@@ -214,7 +214,8 @@ public class BluetoothOBDReader implements OBDReader {
         }
         catch (IOException e) {
             logger.error("BTReader", "Executing job throw an IOException", e);
-            job.setHasData(false);
+            job.setStatus(OBDCommandStatus.CONNECTION_LOST);
+            commandExecutor.disconnect();
         }
         catch (NoDataException e) {
             job.setHasData(false);

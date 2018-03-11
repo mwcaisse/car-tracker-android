@@ -85,13 +85,13 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
     }
 
     public boolean performLoopLogic() {
-        if (!reader.initialize()) {
+        /*if (!reader.initialize()) {
             info(LOG_TAG, "Stopping service, could not establish connection");
             return false;
-        }
-        /*if (!reader.isConnected()) {
-            return attemptReconnect();
         }*/
+        if (!reader.isConnected()) {
+            return attemptReconnect();
+        }
         //perform the data read
         try {
             OBDReading data = reader.read();
@@ -107,8 +107,8 @@ public class OBDServiceTask extends ServiceTask implements ServiceLogger {
         }
         catch (ConnectionLostException e) {
             info(LOG_TAG, "Connection to ODB Device lost.");
-            //return attemptReconnect();
-            return false;
+            return attemptReconnect();
+            //return false;
         }
         catch (Exception e) {
             error(LOG_TAG, "Error Occured while trying to read data!", e);
