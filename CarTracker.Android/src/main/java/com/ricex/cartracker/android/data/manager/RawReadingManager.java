@@ -2,9 +2,11 @@ package com.ricex.cartracker.android.data.manager;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 import com.ricex.cartracker.android.data.dao.RawReadingDao;
 import com.ricex.cartracker.android.data.entity.RawReading;
 import com.ricex.cartracker.android.data.entity.RawTrip;
+import com.ricex.cartracker.android.data.entity.ServerEntity;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -27,10 +29,20 @@ public class RawReadingManager extends ServerEntityManager<RawReading> {
      * @param tripId The id of the trip
      * @return The unsynced readings
      */
-    public List<RawReading> getUnsyncedForTrip(long tripId) {
+    public List<RawReading> getUnsyncedForTrip(long tripId, long limit) {
         try {
             QueryBuilder<RawReading , Long> queryBuilder = getQueryBuilder();
-            queryBuilder.where().eq(RawReading.PROPERTY_SYNCED_WITH_SERVER, false).and().eq(RawReading.PROPERTY_TRIP, tripId);
+            Where<RawReading, Long> where = queryBuilder.where();
+            where.and(
+                    where.eq(RawReading.PROPERTY_SYNCED_WITH_SERVER, false),
+                    where.eq(RawReading.PROPERTY_TRIP, tripId),
+                    where.or(
+                            where.isNull(ServerEntity.PROPERTY_LAST_ATTEMPTED_SYNC),
+                            where.lt(ServerEntity.PROPERTY_LAST_ATTEMPTED_SYNC, getLastSyncedCutoff())
+                    )
+            );
+            queryBuilder.limit(limit);
+
             return executeQuery(queryBuilder);
         }
         catch (SQLException e) {

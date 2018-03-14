@@ -22,6 +22,7 @@ import com.ricex.cartracker.common.viewmodel.entity.ReaderLogViewModel;
 import com.ricex.cartracker.common.viewmodel.entity.ReadingViewModel;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,71 +59,76 @@ public class WebServiceSyncer {
 
 
     public void fullSync() {
+        Log.i(LOG_TAG, "Starting full sync");
         syncLogs();
         syncTrips();
         syncReadings();
+        Log.i(LOG_TAG, "Finished full sync");
     }
 
     /** Synchronize all of the un-synchronized logs
      *
      */
     public void syncLogs() {
-        List<ReaderLog> unsyncedLogs = logManager.getUnsynced();
-        Map<Long, ReaderLog> unsyncedLogsMap = new HashMap<Long, ReaderLog>();
+        List<ReaderLog> unsyncedLogs = logManager.getUnsynced(BULK_UPLOAD_SIZE);
+        Log.i(LOG_TAG, "There are " + unsyncedLogs.size() + " logs to sync");
+        while (null != unsyncedLogs && !unsyncedLogs.isEmpty()) {
+            Map<Long, ReaderLog> unsyncedLogsMap = new HashMap<Long, ReaderLog>();
+            List<BulkUploadViewModel<ReaderLogViewModel>> uploads = new ArrayList<BulkUploadViewModel<ReaderLogViewModel>>();
 
-        if (null != unsyncedLogs && !unsyncedLogs.isEmpty()) {
             for (ReaderLog log : unsyncedLogs) {
                 unsyncedLogsMap.put(log.getId(), log);
+
+                BulkUploadViewModel<ReaderLogViewModel> upload = new BulkUploadViewModel<ReaderLogViewModel>();
+                ReaderLogViewModel model = new ReaderLogViewModel();
+                model.setType(log.getType());
+                model.setMessage(log.getMessage());
+                model.setDate(log.getDate());
+                upload.setUuid(Long.toString(log.getId()));
+                upload.setData(model);
+
+                uploads.add(upload);
             }
 
-            for (int startIndex = 0; startIndex < unsyncedLogs.size(); startIndex += BULK_UPLOAD_SIZE) {
-                List<ReaderLog> toUpload = unsyncedLogs.subList(startIndex, Math.min(startIndex + BULK_UPLOAD_SIZE, unsyncedLogs.size()));
-                List<BulkUploadViewModel<ReaderLogViewModel>> uploads = new ArrayList<BulkUploadViewModel<ReaderLogViewModel>>();
+            try {
+                List<BulkUploadResult> results = requestFactory.createBulkUploadReaderLogRequest(uploads).execute();
+                for (BulkUploadResult result : results) {
+                    ReaderLog readerLog = unsyncedLogsMap.get(Long.parseLong(result.getUuid()));
+                    if (null != readerLog) {
+                        readerLog.setLastAttemptedSync(new Date());
 
-                for (ReaderLog log : toUpload) {
-                    BulkUploadViewModel<ReaderLogViewModel> upload = new BulkUploadViewModel<ReaderLogViewModel>();
-                    ReaderLogViewModel model = new ReaderLogViewModel();
-                    model.setType(log.getType());
-                    model.setMessage(log.getMessage());
-                    model.setDate(log.getDate());
-                    upload.setUuid(Long.toString(log.getId()));
-                    upload.setData(model);
-
-                    uploads.add(upload);
-
-                }
-                try {
-                    List<BulkUploadResult> results = requestFactory.createBulkUploadReaderLogRequest(uploads).execute();
-                    for (BulkUploadResult result : results) {
                         if (result.isSuccessful()) {
-                            ReaderLog readerLog = unsyncedLogsMap.get(Long.parseLong(result.getUuid()));
-                            if (null != readerLog) {
-                                readerLog.setServerId(result.getId());
-                                readerLog.setSyncedWithServer(true);
-                            }
+                            readerLog.setServerId(result.getId());
+                            readerLog.setSyncedWithServer(true);
                         }
                     }
-                    //update the logs
-                    logManager.update(toUpload);
-                }
-                catch (RequestException e) {
-                    Log.w(LOG_TAG, "Error occured while creating reader logs on the server!", e);
                 }
             }
+            catch (RequestException e) {
+                Log.w(LOG_TAG, "Error occured while creating reader logs on the server!", e);
+
+                for (ReaderLog log : unsyncedLogs) {
+                    log.setLastAttemptedSync(new Date());
+                }
+            }
+
+            logManager.update(unsyncedLogs);
+            unsyncedLogs = logManager.getUnsynced(BULK_UPLOAD_SIZE);
+            Log.i(LOG_TAG, "There are " + unsyncedLogs.size() + " logs to sync");
         }
     }
 
     public void syncTrips() {
-        List<RawTrip> unsyncedTrips = tripManager.getUnsynced();
+        List<RawTrip> unsyncedTrips = tripManager.getUnsynced(BULK_UPLOAD_SIZE);
 
-        if (null != unsyncedTrips && !unsyncedTrips.isEmpty()) {
+        while (null != unsyncedTrips && !unsyncedTrips.isEmpty()) {
+            unsyncedTrips = tripManager.getUnsynced(BULK_UPLOAD_SIZE);
+
             for (RawTrip unsyncedTrip : unsyncedTrips) {
-
-
                 Car car = getCarByVin(unsyncedTrip.getCarVin());
                 if (null == car) {
                     Log.w(LOG_TAG, "Couldn't create trip, car with vin: " +
-                                    unsyncedTrip.getCarVin() + " couldn't be fetched/created.");
+                            unsyncedTrip.getCarVin() + " couldn't be fetched/created.");
                     continue;
                 }
 
@@ -132,13 +138,13 @@ public class WebServiceSyncer {
                 trip.setCarId(car.getId());
                 trip.setStatus(TripStatus.NEW);
 
+                unsyncedTrip.setLastAttemptedSync(new Date());
+
                 try {
                     trip = requestFactory.createCreateTripRequest(trip).execute();
 
                     unsyncedTrip.setServerId(trip.getId());
                     unsyncedTrip.setSyncedWithServer(true);
-
-                    tripManager.update(unsyncedTrip);
 
                     syncReadings(unsyncedTrip);
 
@@ -150,6 +156,7 @@ public class WebServiceSyncer {
                     Log.w(LOG_TAG, "Error occurred while creating a trip on the server!", e);
                 }
 
+                tripManager.update(unsyncedTrip);
             }
         }
     }
@@ -221,18 +228,15 @@ public class WebServiceSyncer {
      * @param trip
      */
     protected void syncReadings(RawTrip trip) {
-        List<RawReading> unsyncedReadings = readingManager.getUnsyncedForTrip(trip.getId());
-        Map<Long, RawReading> unsyncedReadingsMap = new HashMap<Long, RawReading>();
+        List<RawReading> unsyncedReadings = readingManager.getUnsyncedForTrip(trip.getId(), BULK_UPLOAD_SIZE);
 
-        for (RawReading reading : unsyncedReadings) {
-            unsyncedReadingsMap.put(reading.getId(), reading);
-        }
+        while (null != unsyncedReadings && !unsyncedReadings.isEmpty()) {
+            Map<Long, RawReading> unsyncedReadingsMap = new HashMap<Long, RawReading>();
 
-        for (int startIndex = 0; startIndex < unsyncedReadings.size(); startIndex += BULK_UPLOAD_SIZE) {
-            List<RawReading> toUpload = unsyncedReadings.subList(startIndex, Math.min(startIndex + BULK_UPLOAD_SIZE, unsyncedReadings.size()));
             List<BulkUploadViewModel<ReadingViewModel>> uploads = new ArrayList<BulkUploadViewModel<ReadingViewModel>>();
+            for (RawReading rawReading : unsyncedReadings) {
+                unsyncedReadingsMap.put(rawReading.getId(), rawReading);
 
-            for (RawReading rawReading : toUpload) {
                 BulkUploadViewModel<ReadingViewModel> upload = new BulkUploadViewModel<ReadingViewModel>();
                 ReadingViewModel model = new ReadingViewModel();
 
@@ -259,25 +263,33 @@ public class WebServiceSyncer {
             try {
                 List<BulkUploadResult> results = requestFactory.createBulkUploadReadingRequest(trip.getServerId(), uploads).execute();
                 for (BulkUploadResult result : results) {
-                    if (result.isSuccessful()) {
-                        RawReading reading = unsyncedReadingsMap.get(Long.parseLong(result.getUuid()));
-                        if (null != reading) {
-                            reading.setServerId(result.getId());
-                            reading.setSyncedWithServer(true);
+                    RawReading reading = unsyncedReadingsMap.get(Long.parseLong(result.getUuid()));
+                    if (null != reading) {
+                        reading.setLastAttemptedSync(new Date());
+                        if (result.isSuccessful()) {
+                            if (null != reading) {
+                                reading.setServerId(result.getId());
+                                reading.setSyncedWithServer(true);
+                            }
                         }
                     }
+
                 }
-                //update the readings with thier server id + synced to server flag
-                readingManager.update(toUpload);
             }
             catch (RequestException e) {
                 Log.w(LOG_TAG, "Error occured while creating readings on the server!", e);
+
+                for (RawReading reading :unsyncedReadings) {
+                    reading.setLastAttemptedSync(new Date());
+                }
             }
 
+            //update the readings with thier server id + synced to server flag
+            readingManager.update(unsyncedReadings);
 
+            unsyncedReadings = readingManager.getUnsyncedForTrip(trip.getId(), BULK_UPLOAD_SIZE);
         }
 
     }
-
 
 }
